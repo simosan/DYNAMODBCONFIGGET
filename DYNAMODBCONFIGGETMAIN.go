@@ -48,9 +48,9 @@ func main() {
 		os.Exit(255)
 	}
 
-	// queryの場合のチェック
-	if *taskOpt == "query" && (*pktOpt != "N" && *pktOpt != "S") {
-		fmt.Println("コマンドライン引数に誤りがあります.queryオプションに誤りがあります.")
+	// 型のチェック
+	if *pktOpt != "N" && *pktOpt != "S" {
+		fmt.Println("コマンドライン引数に誤りがあります.パーティションキーの指定に誤りがあります.")
 		flag.Usage()
 		os.Exit(255)
 	}
@@ -71,12 +71,14 @@ func main() {
 	var rtn string
 	var rtnbyte []byte
 	var err error
+
 	// GetItem
 	if *taskOpt == "get" {
 		var pki lib.GetItemfromKey
 		pki.Tbl = *tblOpt
 		pki.Pky = *pkOpt
 		pki.Pkv = *pkvOpt
+		pki.Pkvt = *pktOpt
 		pki.Itm = *itemOpt
 		// DynamoDBクライアントアクセス
 		rtn, err = pki.GetConfigItem(sesclient)
