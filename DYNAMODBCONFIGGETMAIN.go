@@ -21,7 +21,7 @@ func main() {
 		pkOpt    = flag.String("k", "", "-k パーティションキー（必須）")
 		pkvOpt   = flag.String("v", "", "-v パーティションキー値（必須）")
 		itemOpt  = flag.String("i", "", "-i 表示対象項目名（task=get）")
-		pktOpt   = flag.String("pt", "", "-pt パーティションキーの型（N Or S（task＝queryの場合必須）")
+		pktOpt   = flag.String("pt", "", "-pt パーティションキーの型（N Or S 必須）")
 		profile  = flag.String("p", "", "-p AWSプロファイル（任意）")
 	)
 	// コマンドライン引数の取得
@@ -50,10 +50,12 @@ func main() {
 
 	// 型のチェック
 	if *pktOpt != "N" && *pktOpt != "S" {
-		fmt.Println("コマンドライン引数に誤りがあります.パーティションキーの指定に誤りがあります.")
+		fmt.Println("コマンドライン引数に誤りがあります.パーティションキーの型指定に誤りがあります.")
 		flag.Usage()
 		os.Exit(255)
 	}
+
+	var err error
 
 	// AWSプロファイルの設定
 	if *profile == "" {
@@ -64,13 +66,17 @@ func main() {
 
 	// AWS認証
 	var sesclient *session.Session
-	sesclient = lib.SetAwsCredential(*profile, *regonOpt)
+	//var err error
+	sesclient, err = lib.SetAwsCredential(*profile, *regonOpt)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(255)
+	}
 
 	// 検索条件（GetItem Or Query）を判定し、構造体にパラメータをセット
 	// DynamoDBにアクセスし検索結果を得る
 	var rtn string
 	var rtnbyte []byte
-	var err error
 
 	// GetItem
 	if *taskOpt == "get" {
