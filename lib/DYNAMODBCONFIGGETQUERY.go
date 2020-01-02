@@ -62,7 +62,7 @@ func (qk *QueryfromKey) GetConfigItem(ses *session.Session) ([]byte, error) {
 	// クエリ実行
 	result, err := svc.Query(input)
 	if err != nil {
-		fmt.Println("Query Error! in (qk *GetItemfromKey) GetConfigItem")
+		fmt.Println("Query Error! in (qk *GetItemfromKey) GetConfigItem ", err)
 		return nil, err
 	}
 

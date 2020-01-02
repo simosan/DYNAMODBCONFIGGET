@@ -24,49 +24,31 @@ func main() {
 		pktOpt   = flag.String("pt", "", "-pt パーティションキーの型（N Or S 必須）")
 		profile  = flag.String("p", "", "-p AWSプロファイル（任意）")
 	)
+
 	// コマンドライン引数の取得
 	flag.Parse()
 
-	// 引数タスクチェック
-	if *taskOpt == "" || (*taskOpt != "get" && *taskOpt != "query") {
-		fmt.Println("コマンドライン引数に誤りがあります.タスク指定の誤りです.")
+	// 引数チェック用の連想配列宣言（map）
+	m := make(map[string]string)
+	m["taskOpt"] = *taskOpt
+	m["tblOpt"] = *tblOpt
+	m["regonOpt"] = *regonOpt
+	m["pkOpt"] = *pkOpt
+	m["pkvOpt"] = *pkvOpt
+	m["itemOpt"] = *itemOpt
+	m["pktOpt"] = *pktOpt
+
+	// 引数チェック
+	if lib.CheckParam(m) != 0 {
 		flag.Usage()
 		os.Exit(255)
 	}
 
-	// 各引数のチェック
-	if *tblOpt == "" || *pkOpt == "" || *pkvOpt == "" || *regonOpt == "" {
-		fmt.Println("コマンドライン引数に誤りがあります.必須項目に不足があります.")
-		flag.Usage()
-		os.Exit(255)
-	}
+	// errorハンドラー宣言
+    var err error	
 
-	// taskの場合のチェック
-	if *taskOpt == "get" && *itemOpt == "" {
-		fmt.Println("コマンドライン引数に誤りがあります.getオプションに誤りがあります.")
-		flag.Usage()
-		os.Exit(255)
-	}
-
-	// 型のチェック
-	if *pktOpt != "N" && *pktOpt != "S" {
-		fmt.Println("コマンドライン引数に誤りがあります.パーティションキーの型指定に誤りがあります.")
-		flag.Usage()
-		os.Exit(255)
-	}
-
-	var err error
-
-	// AWSプロファイルの設定
-	if *profile == "" {
-		*profile = os.Getenv("AWS_PROFILE")
-	} else {
-		os.Setenv("AWS_PROFILE", *profile)
-	}
-
-	// AWS認証
+	// AWS認証セッション取得
 	var sesclient *session.Session
-	//var err error
 	sesclient, err = lib.SetAwsCredential(*profile, *regonOpt)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -77,7 +59,6 @@ func main() {
 	// DynamoDBにアクセスし検索結果を得る
 	var rtn string
 	var rtnbyte []byte
-
 	// GetItem
 	if *taskOpt == "get" {
 		var pki lib.GetItemfromKey
@@ -88,7 +69,11 @@ func main() {
 		pki.Itm = *itemOpt
 		// DynamoDBクライアントアクセス
 		rtn, err = pki.GetConfigItem(sesclient)
-		fmt.Println(rtn)
+		if err != nil {
+			os.Exit(255)
+		} else {
+			fmt.Println(rtn)
+		}
 		// Query
 	} else if *taskOpt == "query" {
 		var qfk lib.QueryfromKey
@@ -98,12 +83,11 @@ func main() {
 		qfk.Pkvt = *pktOpt
 		// DynamoDBクライアントアクセス
 		rtnbyte, err = qfk.GetConfigItem(sesclient)
-		fmt.Println(string(rtnbyte))
-	}
-
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(255)
+		if err != nil {
+			os.Exit(255)
+		} else {
+			fmt.Println(string(rtnbyte))
+		}
 	}
 
 	return

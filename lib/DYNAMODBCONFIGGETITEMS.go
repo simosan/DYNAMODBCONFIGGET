@@ -69,7 +69,8 @@ func (pk *GetItemfromKey) GetConfigItem(ses *session.Session) (string, error) {
 
 	resp, err := svc.GetItem(params)
 	if err != nil {
-		fmt.Println("DynamoDB GetItem Error! in (pk *GetItemfromKey) GetConfigItem")
+		fmt.Println("DynamoDB GetItem Error! in (pk *GetItemfromKey) GetConfigItem", err)
+		return "", err
 	}
 
 	return *resp.Item[pk.Itm].S, err
