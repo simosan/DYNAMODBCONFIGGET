@@ -23,6 +23,7 @@ func main() {
 		itemOpt  = flag.String("i", "", "-i 表示対象項目名（task=get）")
 		pktOpt   = flag.String("pt", "", "-pt パーティションキーの型（N Or S 必須）")
 		profile  = flag.String("p", "", "-p AWSプロファイル（任意）")
+		role     = flag.String("rl", "", "-rl IAMロール名（任意）") 
 	)
 
 	// コマンドライン引数の取得
@@ -37,6 +38,8 @@ func main() {
 	m["pkvOpt"] = *pkvOpt
 	m["itemOpt"] = *itemOpt
 	m["pktOpt"] = *pktOpt
+	m["profile"] = *profile
+	m["role"] = *role
 
 	// 引数チェック
 	if lib.CheckParam(m) != 0 {
@@ -45,11 +48,10 @@ func main() {
 	}
 
 	// errorハンドラー宣言
-    var err error	
+	var err error	
 
 	// AWS認証セッション取得
-	var sesclient *session.Session
-	sesclient, err = lib.SetAwsCredential(*profile, *regonOpt)
+	var sesclient *session.Session sesclient, err = lib.SetAwsCredential(*profile, *regonOpt, *role)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(255)
